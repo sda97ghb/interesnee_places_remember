@@ -1,0 +1,34 @@
+{% extends 'places_remember/base.html' %}
+{% load static %}
+
+{% block content %}
+<section>
+    <div>
+        <img src="{% static '/places_remember/img/silhouette.jpg' %}">
+    </div>
+    <div>
+        WIP: Firstname Lastname
+    </div>
+</section>
+<div>
+    <a href="{% url 'places_remember:create_memory' %}">Add memory</a>
+</div>
+<section>
+    {% if memory_list %}
+    <ul>
+        {% for memory in memory_list %}
+        <li>
+            <img src="{% static 'places_remember/img/map_stub.png' %}">
+            {{ memory.place.name|default:"Unknown place" }}
+            {{ memory.place.latitude }}, {{ memory.place.longitude }}
+            {{ memory.title }}
+            {{ memory.text|truncatechars:200 }}
+            <a href="{% url 'places_remember:update_memory' pk=1 %}">Edit</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    There are no memories yet. Let's <a href="{% url 'places_remember:create_memory' %}">add one</a>!
+    {% endif %}
+</section>
+{% endblock content%}

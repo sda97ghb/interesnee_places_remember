@@ -1,0 +1,29 @@
+{% extends 'places_remember/base.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+    <img src="{% static 'places_remember/img/map_stub.png' %}">
+</div>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Save">
+</form>
+{% endblock content%}
+{% block scripts %}
+{% verbatim scripts_verbatim %}
+<script>
+    let latitude = document.getElementById("id_latitude");
+    let longitude = document.getElementById("id_longitude");
+    let zoom = document.getElementById("id_zoom");
+
+    console.log("TODO: propagate map parameters to form inputs");
+    latitude.value = 56.1234;
+    longitude.value = 56.1234;
+    zoom.value = 16;
+</script>
+{% endverbatim scripts_verbatim %}
+{% endblock scripts %}

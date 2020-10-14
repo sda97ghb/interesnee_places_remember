@@ -1,5 +1,7 @@
+from django.contrib.auth.decorators import login_required
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import FormView
 
@@ -8,9 +10,7 @@ from places_remember import forms
 
 class IndexView(View):
     def get(self, request):
-        mode = request.GET.get("mode")
-        if mode == "auth":
-            request.user = {"is_authenticated": True}
+        if request.user.is_authenticated:
             mt = request.GET.get("mt")
             if not mt:
                 context = {
@@ -35,12 +35,14 @@ class IndexView(View):
             return TemplateResponse(request, "places_remember/index_unauthorized.html")
 
 
+@method_decorator(login_required, name="dispatch")
 class CreateMemoryView(FormView):
     template_name = "places_remember/memory_form.html"
     form_class = forms.MemoryForm
     success_url = reverse_lazy("places_remember:index")
 
 
+@method_decorator(login_required, name="dispatch")
 class UpdateMemoryView(FormView):
     template_name = "places_remember/memory_form.html"
     form_class = forms.MemoryForm

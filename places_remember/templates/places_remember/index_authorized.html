@@ -1,13 +1,15 @@
 {% extends 'places_remember/base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block content %}
 <section>
     <div>
-        <img src="{% static '/places_remember/img/silhouette.jpg' %}">
+        {% get_social_accounts user as accounts %}
+        <img src="{{ accounts.facebook.0.get_avatar_url }}" alt="User's photo"/>
     </div>
     <div>
-        WIP: Firstname Lastname
+        {{ user.first_name }} {{ user.last_name }}
     </div>
 </section>
 <div>

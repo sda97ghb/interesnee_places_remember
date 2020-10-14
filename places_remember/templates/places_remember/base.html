@@ -9,11 +9,12 @@
 <body>
 <header>
 {% block header %}
-    <h1>Place remember</h1>
+    <h1><a href="{% url 'places_remember:index' %}">Place remember</a></h1>
     {% if user.is_authenticated %}
-        <a href="{% url 'places_remember:index' %}?mode=">Logout</a>
+        {{ user.username }}
+        <a href="{% url 'account_logout' %}">Logout</a>
     {% else %}
-        <a href="{% url 'places_remember:index' %}?mode=auth">Login</a>
+        <a href="{% url 'account_login' %}">Login</a>
     {% endif %}
 {% endblock header %}
 </header>

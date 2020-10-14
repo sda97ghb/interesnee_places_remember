@@ -9,7 +9,7 @@
 <body>
 <header>
 {% block header %}
-    <h1><a href="{% url 'places_remember:index' %}">Place remember</a></h1>
+    <h1><a href="{% url 'places_remember:index' %}">Places remember</a></h1>
     {% if user.is_authenticated %}
         {{ user.username }}
         <a href="{% url 'account_logout' %}">Logout</a>

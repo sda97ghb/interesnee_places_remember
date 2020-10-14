@@ -1,7 +1,9 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import transaction, IntegrityError
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -77,7 +79,51 @@ class CreateMemoryView(FormView):
 
 
 @method_decorator(login_required, name="dispatch")
-class UpdateMemoryView(FormView):
+class UpdateMemoryView(UserPassesTestMixin, FormView):
     template_name = "places_remember/memory_form.html"
     form_class = forms.MemoryForm
     success_url = reverse_lazy("places_remember:index")
+
+    def test_func(self):
+        pk = self.kwargs["pk"]
+        memory = get_object_or_404(models.Memory, pk=pk)
+        return memory.user == self.request.user
+
+    def get_initial(self):
+        pk = self.kwargs["pk"]
+        memory = get_object_or_404(models.Memory, pk=pk)
+        place = memory.place
+        initial = super().get_initial()
+        initial.update({
+            "latitude": place.latitude,
+            "longitude": place.longitude,
+            "zoom": place.zoom,
+            "place_id": place.place_id,
+            "place_name": place.place_name,
+            "title": memory.title,
+            "text": memory.text
+        })
+        return initial
+
+    def form_valid(self, form):
+        pk = self.kwargs["pk"]
+        try:
+            with transaction.atomic():
+                memory = get_object_or_404(models.Memory, pk=pk)
+                memory.title = form.cleaned_data["title"]
+                memory.text = form.cleaned_data["text"]
+                memory.save()
+                memory.place.latitude = form.cleaned_data["latitude"]
+                memory.place.longitude = form.cleaned_data["longitude"]
+                memory.place.zoom = form.cleaned_data["zoom"]
+                memory.place.place_id = form.cleaned_data["place_id"]
+                memory.place.place_name = form.cleaned_data["place_name"]
+                memory.place.save()
+        except IntegrityError as error:
+            log = logging.getLogger(__name__)
+            log.exception(
+                "Memory update caused IntegrityError while being called with following form's cleaned data: %s",
+                form.cleaned_data
+            )
+        else:
+            return super().form_valid(form)

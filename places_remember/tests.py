@@ -233,6 +233,15 @@ class PlaceModelTests(TestCase):
     def test_verbose_name_plural(self):
         self.assertEqual(str(models.Place._meta.verbose_name_plural), "places")
 
+    def test_ymap_url(self):
+        place = models.Place(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name=""
+        )
+        self.assertTrue(hasattr(place, "ymap_url"))
+        self.assertIsNotNone(place.ymap_url)
+
 
 class MemoryModelTests(TestCase):
     def setUp(self) -> None:

@@ -36,3 +36,7 @@ class Place(models.Model):
     def __str__(self):
         place_name = self.place_name if self.place_name else "Unknown place"
         return f"{place_name} at {self.latitude},{self.longitude}"
+
+    @property
+    def ymap_url(self):
+        return f"https://static-maps.yandex.ru/1.x/?l=map&ll={self.longitude},{self.latitude}&size=600,400&z={self.zoom}&pt={self.longitude},{self.latitude},pm2dom"

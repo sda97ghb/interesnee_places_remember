@@ -16,28 +16,14 @@ from places_remember import forms, models
 class IndexView(View):
     def get(self, request):
         if request.user.is_authenticated:
-            mt = request.GET.get("mt")
-            if not mt:
-                context = {
-                    "memory_list": [
-                        {
-                            "place": {
-                                "latitude": 56.83800773134774,
-                                "longitude": 60.60362527445821,
-                                "zoom": 16,
-                                "id": None,
-                                "name": None,
-                                "ymap_url": "https://static-maps.yandex.ru/1.x/?l=map&ll=60.60362527445821,56.83800773134774&size=600,400&z=16"
-                            },
-                            "title": "Lorim ipsum dolor",
-                            "text": "Lorem ipsum dolor sit amet."
-                        }
-                    ] * 3
-                }
-            else:
-                context = {}
+            current_user_memories = models.Memory.objects.filter(user=self.request.user)
+            context = {
+                "memory_list": current_user_memories
+            }
+            # TODO: rename index_authorized.html to index_authenticated.html
             return TemplateResponse(request, "places_remember/index_authorized.html", context)
         else:
+            # TODO: rename index_unauthorized.html to index_not_authenticated.html
             return TemplateResponse(request, "places_remember/index_unauthorized.html")
 
 

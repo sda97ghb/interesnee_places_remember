@@ -25,7 +25,7 @@
             {{ memory.place.latitude }}, {{ memory.place.longitude }}
             {{ memory.title }}
             {{ memory.text|truncatechars:200 }}
-            <a href="{% url 'places_remember:update_memory' pk=1 %}">Edit</a>
+            <a href="{% url 'places_remember:update_memory' pk=memory.pk %}">Edit</a>
         </li>
         {% endfor %}
     </ul>

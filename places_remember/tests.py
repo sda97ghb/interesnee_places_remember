@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client, override_settings, RequestFactory
 from django.urls import reverse
 
-from places_remember import forms
+from places_remember import forms, models
 
 
 class IndexViewTests(TestCase):
@@ -151,6 +151,20 @@ class MemoryFormTests(TestCase):
         self.assertTrue(forms.MemoryForm({"zoom": 21, **data}).is_valid())
         self.assertFalse(forms.MemoryForm({"zoom": 22, **data}).is_valid())
 
+    def test_place_name_limits(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "longitude": 60.60362527445821,
+            "zoom": 16,
+            "place_id": None,
+            "title": "Awesome place",
+            "text": "This place is really awesome!"
+        }
+        self.assertTrue(forms.MemoryForm({"place_name": "", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"place_name": "Test, test, test", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"place_name": "t" * 100, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"place_name": "t" * 101, **data}).is_valid())
+
     def test_title_limits(self):
         data = {
             "latitude": 56.83800773134774,
@@ -205,3 +219,56 @@ class YandexMapsContextProcessorTests(TestCase):
         from places_remember.context_processors import yandex_maps
         context = yandex_maps(RequestFactory().get("/"))
         self.assertIn("1.2.3.4.5.6.7.8.9", context["yandex_maps"]["api_script_url"])
+
+
+class PlaceModelTests(TestCase):
+    def test_string_representation(self):
+        place = models.Place(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name=""
+        )
+        self.assertEqual(str(place), "Unknown place at 56.83800773134774,60.60362527445821")
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(models.Place._meta.verbose_name_plural), "places")
+
+
+class MemoryModelTests(TestCase):
+    def setUp(self) -> None:
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="john", email="test@gmail.com", password="test",
+            first_name="John", last_name="Doe"
+        )
+        self.place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name=""
+        )
+
+    def test_string_representation(self):
+        memory = models.Memory(
+            user=self.user,
+            title="Test memory",
+            text="Test, test, test.",
+            place=self.place
+        )
+        self.assertEqual(str(memory),
+                         "John Doe's memory about Unknown place at 56.83800773134774,60.60362527445821: Test memory")
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(models.Memory._meta.verbose_name_plural), "memories")
+
+    def test_get_absolute_url(self):
+        c = Client()
+        c.force_login(self.user)
+        memory = models.Memory.objects.create(
+            user=self.user,
+            title="Test memory",
+            text="Test, test, test.",
+            place=self.place
+        )
+        response = c.get(memory.get_absolute_url())
+        memory.delete()
+        self.assertEqual(response.status_code, 200)

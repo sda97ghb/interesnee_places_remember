@@ -7,7 +7,7 @@ class MemoryForm(forms.Form):
     longitude = forms.FloatField(widget=forms.HiddenInput())
     zoom = forms.IntegerField(widget=forms.HiddenInput())
     place_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-    place_name = forms.CharField(required=False, widget=forms.HiddenInput())
+    place_name = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput())
     title = forms.CharField(max_length=100)
     text = forms.CharField(widget=forms.Textarea, max_length=1000)
 

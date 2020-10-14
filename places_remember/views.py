@@ -1,11 +1,14 @@
+import logging
+
 from django.contrib.auth.decorators import login_required
+from django.db import transaction, IntegrityError
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import FormView
 
-from places_remember import forms
+from places_remember import forms, models
 
 
 class IndexView(View):
@@ -48,8 +51,29 @@ class CreateMemoryView(FormView):
     }
 
     def form_valid(self, form):
-        print(f"Create memory {form.cleaned_data}")
-        return super().form_valid(form)
+        try:
+            with transaction.atomic():
+                memory = models.Memory.objects.create(
+                    user=self.request.user,
+                    title=form.cleaned_data["title"],
+                    text=form.cleaned_data["text"]
+                )
+                place = models.Place.objects.create(
+                    latitude=form.cleaned_data["latitude"],
+                    longitude=form.cleaned_data["longitude"],
+                    zoom=form.cleaned_data["zoom"],
+                    place_id=form.cleaned_data["place_id"],
+                    place_name=form.cleaned_data["place_name"],
+                    memory=memory
+                )
+        except IntegrityError as error:
+            log = logging.getLogger(__name__)
+            log.exception(
+                "Memory creation caused IntegrityError while being called with following form's cleaned data: %s",
+                form.cleaned_data
+            )
+        else:
+            return super().form_valid(form)
 
 
 @method_decorator(login_required, name="dispatch")

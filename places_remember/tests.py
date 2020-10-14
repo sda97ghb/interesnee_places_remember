@@ -241,21 +241,39 @@ class MemoryModelTests(TestCase):
             username="john", email="test@gmail.com", password="test",
             first_name="John", last_name="Doe"
         )
-        self.place = models.Place.objects.create(
-            latitude=56.83800773134774, longitude=60.60362527445821,
-            zoom=16,
-            place_id=None, place_name=""
-        )
 
     def test_string_representation(self):
-        memory = models.Memory(
+        memory = models.Memory.objects.create(
             user=self.user,
             title="Test memory",
             text="Test, test, test.",
-            place=self.place
+        )
+        place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=memory
         )
         self.assertEqual(str(memory),
                          "John Doe's memory about Unknown place at 56.83800773134774,60.60362527445821: Test memory")
+
+    def test_string_representation_no_first_and_last_names(self):
+        user = self.User.objects.create_user(
+            username="jane", email="test@gmail.com", password="test"
+        )
+        memory = models.Memory.objects.create(
+            user=user,
+            title="Test memory",
+            text="Test, test, test.",
+        )
+        place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=memory
+        )
+        self.assertEqual(str(memory),
+                         "jane's memory about Unknown place at 56.83800773134774,60.60362527445821: Test memory")
 
     def test_verbose_name_plural(self):
         self.assertEqual(str(models.Memory._meta.verbose_name_plural), "memories")
@@ -267,7 +285,12 @@ class MemoryModelTests(TestCase):
             user=self.user,
             title="Test memory",
             text="Test, test, test.",
-            place=self.place
+        )
+        place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=memory
         )
         response = c.get(memory.get_absolute_url())
         memory.delete()

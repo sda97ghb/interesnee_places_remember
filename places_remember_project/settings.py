@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.facebook",
     "places_remember",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

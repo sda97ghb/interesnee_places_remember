@@ -79,6 +79,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "places_remember.context_processors.yandex_maps",
             ],
         },
     },
@@ -186,3 +187,13 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 LOGIN_REDIRECT_URL = reverse_lazy("places_remember:index")
+
+
+# Maps
+# Usual maps https://yandex.ru/dev/maps/jsapi/doc/2.1/quick-start/index.html
+# Static maps https://yandex.ru/dev/maps/staticapi/doc/1.x/dg/concepts/input_params.html/
+
+YANDEX_MAPS_API_VERSION = "2.1"
+YANDEX_MAPS_API_KEY = "9b2154e4-aa93-4eaf-879a-0a3fc3e752b7"
+if not DEBUG:
+    warnings.warn("Replace YANDEX_MAPS_API_KEY in production and remove this line")

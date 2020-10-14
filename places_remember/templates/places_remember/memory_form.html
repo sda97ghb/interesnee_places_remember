@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-<div>
-    <img src="{% static 'places_remember/img/map_stub.png' %}">
+<div id="map" style="width: 600px; height: 400px">
+    <div style="position: relative; left: 297px; top: 197px; border: 2px solid red; background-color: white; width: 6px; height: 6px; border-radius: 6px; z-index: 100;"></div>
 </div>
 <form method="post">
     {% csrf_token %}
@@ -14,16 +14,8 @@
 </form>
 {% endblock content%}
 {% block scripts %}
-{% verbatim scripts_verbatim %}
-<script>
-    let latitude = document.getElementById("id_latitude");
-    let longitude = document.getElementById("id_longitude");
-    let zoom = document.getElementById("id_zoom");
-
-    console.log("TODO: propagate map parameters to form inputs");
-    latitude.value = 56.1234;
-    longitude.value = 56.1234;
-    zoom.value = 16;
-</script>
-{% endverbatim scripts_verbatim %}
+{% autoescape off %}
+{{ yandex_maps.api_script }}
+{% endautoescape %}
+<script src="{% static 'places_remember/js/memory_form.js' %}" type="text/javascript"></script>
 {% endblock scripts %}

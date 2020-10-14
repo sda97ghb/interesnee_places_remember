@@ -1,6 +1,9 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings, RequestFactory
 from django.urls import reverse
+
+from places_remember import forms
 
 
 class IndexViewTests(TestCase):
@@ -14,13 +17,13 @@ class CreateMemoryViewTests(TestCase):
     def setUp(self) -> None:
         User = get_user_model()
         user = User.objects.create_user("test", "test@gmail.com", "test")
-        
+
     def test_available_for_logged_in(self):
         c = Client()
         c.login(username="test", password="test")
         response = c.get(reverse("places_remember:create_memory"))
         self.assertEqual(response.status_code, 200)
-        
+
     def test_redirects_not_logged_in_to_login(self):
         c = Client()
         path = reverse("places_remember:create_memory")
@@ -76,3 +79,129 @@ class LoginTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("https://www.facebook.com", response.url)
         self.assertIn("oauth", response.url)
+
+
+class MemoryFormTests(TestCase):
+    def test_has_fields(self):
+        form = forms.MemoryForm()
+        self.assertIn("latitude", form.fields)
+        self.assertIn("longitude", form.fields)
+        self.assertIn("zoom", form.fields)
+        self.assertIn("place_id", form.fields)
+        self.assertIn("place_name", form.fields)
+        self.assertIn("title", form.fields)
+        self.assertIn("text", form.fields)
+
+    def test_good_case(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "longitude": 60.60362527445821,
+            "zoom": 16,
+            "place_id": None,
+            "place_name": "",
+            "title": "Awesome place",
+            "text": "This place is really awesome!"
+        }
+        form = forms.MemoryForm(data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data, data)
+
+    def test_latitude_limits(self):
+        data = {
+            "longitude": 60.60362527445821,
+            "zoom": 16,
+            "place_id": None,
+            "place_name": "",
+            "title": "Awesome place",
+            "text": "This place is really awesome!"
+        }
+        self.assertFalse(forms.MemoryForm({"latitude": -91, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"latitude": -90, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"latitude": 0, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"latitude": 90, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"latitude": 91, **data}).is_valid())
+
+    def test_longitude_limits(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "zoom": 16,
+            "place_id": None,
+            "place_name": "",
+            "title": "Awesome place",
+            "text": "This place is really awesome!"
+        }
+        self.assertFalse(forms.MemoryForm({"longitude": -181, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"longitude": -180, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"longitude": 0, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"longitude": 180, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"longitude": 181, **data}).is_valid())
+
+    def test_zoom_limits(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "longitude": 60.60362527445821,
+            "place_id": None,
+            "place_name": "",
+            "title": "Awesome place",
+            "text": "This place is really awesome!"
+        }
+        self.assertFalse(forms.MemoryForm({"zoom": -1, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"zoom": 0, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"zoom": 16, **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"zoom": 21, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"zoom": 22, **data}).is_valid())
+
+    def test_title_limits(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "longitude": 60.60362527445821,
+            "zoom": 16,
+            "place_id": None,
+            "place_name": "",
+            "text": "This place is really awesome!"
+        }
+        self.assertFalse(forms.MemoryForm({"title": "", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"title": "Test, test, test", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"title": "t" * 100, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"title": "t" * 101, **data}).is_valid())
+
+    def test_text_limits(self):
+        data = {
+            "latitude": 56.83800773134774,
+            "longitude": 60.60362527445821,
+            "zoom": 16,
+            "place_id": None,
+            "place_name": "",
+            "title": "Awesome place"
+        }
+        self.assertFalse(forms.MemoryForm({"text": "", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"text": "Test, test, test", **data}).is_valid())
+        self.assertTrue(forms.MemoryForm({"text": "t" * 1000, **data}).is_valid())
+        self.assertFalse(forms.MemoryForm({"text": "t" * 1001, **data}).is_valid())
+
+
+class YandexMapsContextProcessorTests(TestCase):
+    @override_settings()
+    def test_requires_api_key(self):
+        if hasattr(settings, "YANDEX_MAPS_API_KEY"):
+            del settings.YANDEX_MAPS_API_KEY
+        from places_remember.context_processors import yandex_maps
+        self.assertRaises(Exception, yandex_maps, RequestFactory().get("/"))
+
+    @override_settings(YANDEX_MAPS_API_KEY="actual-value-does-not-matter-here")
+    def test_produced_context_has_values(self):
+        from places_remember.context_processors import yandex_maps
+        context = yandex_maps(RequestFactory().get("/"))
+        self.assertIn("yandex_maps", context)
+        self.assertIn("api_key", context["yandex_maps"])
+        self.assertIn("api_script", context["yandex_maps"])
+        self.assertIn("api_script_url", context["yandex_maps"])
+
+    @override_settings(
+        YANDEX_MAPS_API_KEY="actual-value-does-not-matter-here",
+        YANDEX_MAPS_API_VERSION="1.2.3.4.5.6.7.8.9"
+    )
+    def test_use_api_version_setting(self):
+        from places_remember.context_processors import yandex_maps
+        context = yandex_maps(RequestFactory().get("/"))
+        self.assertIn("1.2.3.4.5.6.7.8.9", context["yandex_maps"]["api_script_url"])

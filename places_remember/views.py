@@ -17,11 +17,12 @@ class IndexView(View):
                     "memory_list": [
                         {
                             "place": {
-                                "latitude": 56.1234,
-                                "longitude": 56.1234,
+                                "latitude": 56.83800773134774,
+                                "longitude": 60.60362527445821,
                                 "zoom": 16,
                                 "id": None,
-                                "name": None
+                                "name": None,
+                                "ymap_url": "https://static-maps.yandex.ru/1.x/?l=map&ll=60.60362527445821,56.83800773134774&size=600,400&z=16"
                             },
                             "title": "Lorim ipsum dolor",
                             "text": "Lorem ipsum dolor sit amet."
@@ -40,6 +41,15 @@ class CreateMemoryView(FormView):
     template_name = "places_remember/memory_form.html"
     form_class = forms.MemoryForm
     success_url = reverse_lazy("places_remember:index")
+    initial = {
+        "latitude": 56.83800773134774,
+        "longitude": 60.60362527445821,
+        "zoom": 16,
+    }
+
+    def form_valid(self, form):
+        print(f"Create memory {form.cleaned_data}")
+        return super().form_valid(form)
 
 
 @method_decorator(login_required, name="dispatch")

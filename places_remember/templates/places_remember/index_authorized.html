@@ -20,7 +20,7 @@
     <ul>
         {% for memory in memory_list %}
         <li>
-            <img src="{% static 'places_remember/img/map_stub.png' %}">
+            <img src="{{ memory.place.ymap_url }}" alt="Memory place's map">
             {{ memory.place.name|default:"Unknown place" }}
             {{ memory.place.latitude }}, {{ memory.place.longitude }}
             {{ memory.title }}

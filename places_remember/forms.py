@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 class MemoryForm(forms.Form):
     latitude = forms.FloatField(widget=forms.HiddenInput())
     longitude = forms.FloatField(widget=forms.HiddenInput())
-    zoom = forms.IntegerField(widget=forms.HiddenInput())
+    zoom = forms.FloatField(widget=forms.HiddenInput())
     place_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     place_name = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput())
     title = forms.CharField(max_length=100)
@@ -35,6 +35,8 @@ class MemoryForm(forms.Form):
     def clean_zoom(self):
         zoom = self.cleaned_data["zoom"]
         if 0 <= zoom <= 21:
-            return zoom
+            # Usual Yandex maps can produce float zoom on devices with touchscreen.
+            # Though api documentation defines it as integer and static maps does not support float zoom.
+            return int(zoom)
         else:
             raise ValidationError("Zoom must be in a range from 0 (entire world) to 21")

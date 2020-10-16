@@ -32,7 +32,7 @@ SECRET_KEY = "rfia*oxalattw-b64#qmp!e-=if!nxk81l+5#7a!02&bpi9%*q"
 if not DEBUG:
     warnings.warn("Replace SECRET_KEY in production and remove this line")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition

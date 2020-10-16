@@ -34,12 +34,23 @@ class CreateMemoryViewTests(TestCase):
 class UpdateMemoryViewTests(TestCase):
     def setUp(self) -> None:
         User = get_user_model()
-        user = User.objects.create_user("test", "test@gmail.com", "test")
+        self.user = User.objects.create_user("test", "test@gmail.com", "test")
+        self.memory = models.Memory.objects.create(
+            user=self.user,
+            title="Test memory",
+            text="Test, test, test.",
+        )
+        self.place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=self.memory
+        )
 
     def test_available_for_logged_in(self):
         c = Client()
         c.login(username="test", password="test")
-        path = reverse("places_remember:update_memory", kwargs={"pk": 1})
+        path = reverse("places_remember:update_memory", kwargs={"pk": self.memory.pk})
         response = c.get(path)
         self.assertEqual(response.status_code, 200)
 
@@ -192,6 +203,16 @@ class MemoryFormTests(TestCase):
         self.assertTrue(forms.MemoryForm({"text": "Test, test, test", **data}).is_valid())
         self.assertTrue(forms.MemoryForm({"text": "t" * 1000, **data}).is_valid())
         self.assertFalse(forms.MemoryForm({"text": "t" * 1001, **data}).is_valid())
+
+    def test_visible_fields_have_form_control_class(self):
+        form = forms.MemoryForm()
+        for field in form.visible_fields():
+            self.assertIn("form-control", str(field))
+
+    def test_label_suffix(self):
+        self.assertEqual(forms.MemoryForm().label_suffix, "")
+        self.assertEqual(forms.MemoryForm(label_suffix=None).label_suffix, "")
+        self.assertEqual(forms.MemoryForm(label_suffix="foo").label_suffix, "foo")
 
 
 class YandexMapsContextProcessorTests(TestCase):

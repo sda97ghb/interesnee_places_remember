@@ -1,0 +1,65 @@
+{% extends 'places_remember/base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'places_remember/css/index_authenticated.css' %}">
+{% endblock head_extra%}
+
+{% block content %}
+<section class="container mt-4">
+    <div class="row">
+        <div class="col-auto mx-auto">
+            {% get_social_accounts user as accounts %}
+            <img class="profile-picture rounded-circle border" src="{{ accounts.facebook.0.get_avatar_url }}"
+                 alt="User's photo"/>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col text-center h4">
+            {{ user.first_name }} {{ user.last_name }}
+        </div>
+    </div>
+</section>
+<div class="container mt-3 mb-4">
+    <div class="row">
+        <div class="col-auto mx-auto">
+            <a class="btn btn-primary" role="button" href="{% url 'places_remember:create_memory' %}">Add memory</a>
+        </div>
+    </div>
+</div>
+<section class="container">
+    {% if memory_list %}
+    <ul class="list-unstyled">
+        {% for memory in memory_list %}
+        <li class="media flex-column flex-md-row mb-3">
+            <img class="map-preview mr-2 mb-2" src="{{ memory.place.ymap_url }}" alt="Memory place's map">
+            <div class="media-body">
+                <h4 class="text-break">
+                    {{ memory.title }}
+                </h4>
+                <p class="text-black-50 mb-2">
+                    {{ memory.place.name|default:"Unknown place" }}
+                    at {{ memory.place.latitude }}, {{ memory.place.longitude }}
+                </p>
+                <p class="mb-2 text-break">
+                    {{ memory.text|truncatechars:200 }}
+                </p>
+                <div>
+                    <a href="{% url 'places_remember:update_memory' pk=memory.pk %}">Edit</a>
+                    <a href="#">Delete</a>
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="row align-items-center justify-content-center empty-state">
+        <div class="col-auto text-center">
+            There are no memories yet.<br/>
+            Let's <a href="{% url 'places_remember:create_memory' %}">add one</a>!
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock content%}

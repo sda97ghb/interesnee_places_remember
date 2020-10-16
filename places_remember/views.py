@@ -20,11 +20,14 @@ class IndexView(View):
             context = {
                 "memory_list": current_user_memories
             }
-            # TODO: rename index_authorized.html to index_authenticated.html
-            return TemplateResponse(request, "places_remember/index_authorized.html", context)
+            return TemplateResponse(request, "places_remember/index_authenticated.html", context)
         else:
-            # TODO: rename index_unauthorized.html to index_not_authenticated.html
-            return TemplateResponse(request, "places_remember/index_unauthorized.html")
+            return TemplateResponse(request, "places_remember/index_not_authenticated.html")
+
+
+class AboutView(View):
+    def get(self, request):
+        return TemplateResponse(request, "places_remember/about.html")
 
 
 @method_decorator(login_required, name="dispatch")
@@ -36,6 +39,9 @@ class CreateMemoryView(FormView):
         "latitude": 56.83800773134774,
         "longitude": 60.60362527445821,
         "zoom": 16,
+    }
+    extra_context = {
+        "title": "Add memory"
     }
 
     def form_valid(self, form):
@@ -69,6 +75,9 @@ class UpdateMemoryView(UserPassesTestMixin, FormView):
     template_name = "places_remember/memory_form.html"
     form_class = forms.MemoryForm
     success_url = reverse_lazy("places_remember:index")
+    extra_context = {
+        "title": "Edit memory"
+    }
 
     def test_func(self):
         pk = self.kwargs["pk"]
@@ -113,3 +122,6 @@ class UpdateMemoryView(UserPassesTestMixin, FormView):
             )
         else:
             return super().form_valid(form)
+
+
+# TODO: add delete memory view

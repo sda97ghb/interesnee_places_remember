@@ -1,0 +1,9 @@
+{% extends 'places_remember/base.html' %}
+{% load socialaccount %}
+
+{% block content %}
+<div class="container">
+    WIP: Site description and login button
+    <a href="{% provider_login_url 'facebook' method='oauth2' %}">Facebook</a>
+</div>
+{% endblock content%}

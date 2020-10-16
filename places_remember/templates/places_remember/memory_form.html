@@ -1,18 +1,40 @@
 {% extends 'places_remember/base.html' %}
 {% load static %}
 
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'places_remember/css/memory_form.css' %}">
+{% endblock head_extra%}
+
 {% block content %}
-<div id="map" style="width: 600px; height: 400px">
-    <div style="position: relative; left: 297px; top: 197px; border: 2px solid red; background-color: white; width: 6px; height: 6px; border-radius: 6px; z-index: 100;"></div>
+<div class="container px-0">
+    <h2 class="my-3">{{ title|default:"Memory" }}</h2>
+
+    <div id="map" class="bg-light w-100 map">
+        <div class="map-marker-wrapper">
+            <svg class="map-marker text-primary bi bi-geo-alt-fill" fill="currentColor" viewBox="0 0 16 16"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                      d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+            </svg>
+        </div>
+    </div>
+
+    <form class="my-3 mx-3 mx-md-0" method="post">
+        {% csrf_token %}
+        {% for field in form.hidden_fields %}
+        {{ field }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field.as_widget }}
+        </div>
+        {% endfor %}
+        <input type="submit" class="btn btn-primary" value="Save">
+    </form>
 </div>
-<form method="post">
-    {% csrf_token %}
-    <table>
-        {{ form.as_table }}
-    </table>
-    <input type="submit" value="Save">
-</form>
 {% endblock content%}
+
 {% block scripts %}
 {% autoescape off %}
 {{ yandex_maps.api_script }}

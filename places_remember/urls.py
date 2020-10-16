@@ -21,7 +21,8 @@ from places_remember import views
 app_name = "places_remember"
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name="index"),
-    path('memories/new', views.CreateMemoryView.as_view(), name="create_memory"),
-    path('memories/<int:pk>', views.UpdateMemoryView.as_view(), name="update_memory"),
+    path("", views.IndexView.as_view(), name="index"),
+    path("about/", views.AboutView.as_view(), name="about"),
+    path("memories/new/", views.CreateMemoryView.as_view(), name="create_memory"),
+    path("memories/<int:pk>/", views.UpdateMemoryView.as_view(), name="update_memory"),
 ]

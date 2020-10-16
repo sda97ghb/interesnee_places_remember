@@ -1,0 +1,18 @@
+.map-marker-wrapper {
+    position: relative;
+    width: 0;
+    height: 0;
+    z-index: 3;
+    margin-left: 50%;
+}
+
+.map-marker {
+    width: 3rem;
+    height: 3rem;
+    margin-left: -1.5rem;
+    margin-top: calc(200px - 3rem);
+}
+
+.map {
+    height: 400px;
+}

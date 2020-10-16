@@ -11,6 +11,13 @@ class MemoryForm(forms.Form):
     title = forms.CharField(max_length=100)
     text = forms.CharField(widget=forms.Textarea, max_length=1000)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].widget.attrs["class"] = "form-control"
+        self.fields["text"].widget.attrs["class"] = "form-control"
+        label_suffix = kwargs.get("label_suffix", None)
+        self.label_suffix = label_suffix if label_suffix is not None else ""
+
     def clean_latitude(self):
         latitude = self.cleaned_data["latitude"]
         if -90 <= latitude <= 90:

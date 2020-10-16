@@ -21,5 +21,7 @@ urlpatterns = [
     path("", include("places_remember.urls")),
     path("admin/", admin.site.urls),
     path("accounts/signup/", login, name="account_signup"),  # Forbid manual signup, users must use Facebook instead
-    path("accounts/", include('allauth.urls')),
+    path("accounts/", include("allauth.urls")),
 ]
+
+# TODO: add 404 and 403 custom handlers

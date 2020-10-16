@@ -1,9 +1,80 @@
 {% extends 'places_remember/base.html' %}
+{% load static %}
 {% load socialaccount %}
 
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'places_remember/css/index_not_authenticated.css' %}">
+{% endblock head_extra %}
+
 {% block content %}
-<div class="container">
-    WIP: Site description and login button
-    <a href="{% provider_login_url 'facebook' method='oauth2' %}">Facebook</a>
+<div class="container d-block d-lg-none">
+    <img class="w-100 mt-4 mb-3 border shadow-sm" src="{% static 'places_remember/img/preview/list_of_memories.png' %}"
+         alt="Your personal list of memories">
+    <h4>Your personal memories collection</h4>
+    <p>
+        Point any place, write down your memories and save them in your personal collection.
+    </p>
+    <p>
+        Nothing will be forgotten!
+    </p>
+    <img class="w-100 mt-3 mb-3 border shadow-sm" src="{% static 'places_remember/img/preview/memory_editing.png' %}"
+         alt="Memory editing: choose location on a map and write your memory down">
+    <h4>As accurate as you need</h4>
+    <p>
+        City, street or random location far away?
+        Choose <strong>any</strong> place!
+    </p>
+    <p>
+        Write text up to 1000 characters long!
+    </p>
+    <div class="row my-5">
+        <div class="col-auto mx-auto">
+            Try it now with
+            <a class="btn btn-primary" href="{% provider_login_url 'facebook' method='oauth2' %}">Facebook login</a>
+            !
+        </div>
+    </div>
+</div>
+<div class="container-xl d-none d-lg-block">
+    <div class="row align-items-center">
+        <div class="col-5 offset-1">
+            <img class="img-preview-big mt-4 mb-3 border shadow"
+                 src="{% static 'places_remember/img/preview/list_of_memories.png' %}"
+                 alt="Your personal list of memories">
+        </div>
+        <div class="col-5">
+            <h4>Your personal memories collection</h4>
+            <p>
+                Point any place, write down your memories and save them in your personal collection.
+            </p>
+            <p>
+                Nothing will be forgotten!
+            </p>
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-5 offset-1">
+            <h4>As accurate as you need</h4>
+            <p>
+                City, street or random location far away?
+                Choose <strong>any</strong> place!
+            </p>
+            <p>
+                Write text up to 1000 characters long!
+            </p>
+        </div>
+        <div class="col-5">
+            <img class="img-preview-big mt-3 mb-3 border shadow"
+                 src="{% static 'places_remember/img/preview/memory_editing.png' %}"
+                 alt="Memory editing: choose location on a map and write your memory down">
+        </div>
+    </div>
+    <div class="row my-5">
+        <div class="col-auto mx-auto">
+            Try it now with
+            <a class="btn btn-primary" href="{% provider_login_url 'facebook' method='oauth2' %}">Facebook login</a>
+            !
+        </div>
+    </div>
 </div>
 {% endblock content%}

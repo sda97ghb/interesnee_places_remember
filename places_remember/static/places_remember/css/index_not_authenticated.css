@@ -1,0 +1,13 @@
+@media (max-width: 992px) {
+    h4 {
+        font-size: 1.25rem;
+    }
+}
+
+p {
+    margin-bottom: 0.5rem;
+}
+
+.img-preview-big {
+    height: 400px;
+}

@@ -33,6 +33,18 @@ class IndexViewTests(TestCase):
         self.assertEqual(c.get("/").status_code, 200)
 
 
+class AboutViewTests(TestCase):
+    def test_is_available(self):
+        c = Client()
+
+        path = reverse("places_remember:about")
+
+        self.assertEqual(c.get(path).status_code, 200)
+
+        c.login(username="test", password="test")
+        self.assertEqual(c.get(path).status_code, 200)
+
+
 class CreateMemoryViewTests(TestCase):
     def setUp(self) -> None:
         User = get_user_model()

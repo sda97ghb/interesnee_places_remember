@@ -27,13 +27,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
-# Quick-start development settings - unsuitable for production
+# Security
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 ALLOWED_HOSTS = ["*"]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 
 # Application definition
@@ -103,7 +106,7 @@ DATABASES = {
     "default": dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
 for _, db in DATABASES.items():
-    if db["ENGINE"] == "django.db.backends.sqlite3":
+    if "ENGINE" in db and db["ENGINE"] == "django.db.backends.sqlite3":
         del db["OPTIONS"]['sslmode']
 
 

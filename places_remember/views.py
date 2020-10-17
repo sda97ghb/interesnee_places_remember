@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import FormView
+from django.views.generic import FormView, DeleteView
 
 from places_remember import forms, models
 
@@ -66,6 +66,7 @@ class CreateMemoryView(FormView):
                 "Memory creation caused IntegrityError while being called with following form's cleaned data: %s",
                 form.cleaned_data
             )
+            raise
         else:
             return super().form_valid(form)
 
@@ -124,4 +125,14 @@ class UpdateMemoryView(UserPassesTestMixin, FormView):
             return super().form_valid(form)
 
 
-# TODO: add delete memory view
+@method_decorator(login_required, name="dispatch")
+class DeleteMemoryView(UserPassesTestMixin, DeleteView):
+    success_url = reverse_lazy("places_remember:index")
+
+    def test_func(self):
+        memory = self.get_object()
+        return memory.user == self.request.user
+
+    def get_queryset(self):
+        current_user_memories = models.Memory.objects.filter(user=self.request.user)
+        return current_user_memories

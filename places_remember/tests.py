@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client, override_settings, RequestFactory
@@ -5,10 +7,28 @@ from django.urls import reverse
 
 from places_remember import forms, models
 
+REQUIRED_ENVIRONMENT_VARIABLES = [
+    "SECRET_KEY",
+    "FACEBOOK_SECRET",
+    "YANDEX_MAPS_API_KEY",
+    "DATABASE_URL"
+]
+for v in REQUIRED_ENVIRONMENT_VARIABLES:
+    if v not in os.environ:
+        raise Exception(f"Environment variable required but not set: {v}")
+
 
 class IndexViewTests(TestCase):
+    def setUp(self) -> None:
+        User = get_user_model()
+        self.user = User.objects.create_user("test", "test@gmail.com", "test")
+
     def test_index_is_available(self):
         c = Client()
+        self.assertEqual(c.get("").status_code, 200)
+        self.assertEqual(c.get("/").status_code, 200)
+
+        c.login(username="test", password="test")
         self.assertEqual(c.get("").status_code, 200)
         self.assertEqual(c.get("/").status_code, 200)
 
@@ -16,19 +36,46 @@ class IndexViewTests(TestCase):
 class CreateMemoryViewTests(TestCase):
     def setUp(self) -> None:
         User = get_user_model()
-        user = User.objects.create_user("test", "test@gmail.com", "test")
+        self.user = User.objects.create_user("test", "test@gmail.com", "test")
 
-    def test_available_for_logged_in(self):
+    def test_good_case(self):
         c = Client()
         c.login(username="test", password="test")
-        response = c.get(reverse("places_remember:create_memory"))
-        self.assertEqual(response.status_code, 200)
+
+        path = reverse("places_remember:create_memory")
+
+        self.assertEqual(c.get(path).status_code, 200)
+
+        response = c.post(path, {
+            "latitude": 50,
+            "longitude": 70,
+            "zoom": 3,
+            "place_id": 345,
+            "place_name": "Foobar Baz",
+            "title": "New title",
+            "text": "New text"
+        })
+        expected_redirect = reverse("places_remember:index")
+        self.assertRedirects(response, expected_redirect)
+        # Database is recreated before every test.
+        # This means test user should has only one memory + place now.
+        qs = models.Memory.objects.filter(user_id=self.user.id)
+        self.assertTrue(qs.exists())
+        memory = qs.get()
+        self.assertEqual(memory.place.latitude, 50)
+        self.assertEqual(memory.place.longitude, 70)
+        self.assertEqual(memory.place.zoom, 3)
+        self.assertEqual(memory.place.place_id, 345)
+        self.assertEqual(memory.place.place_name, "Foobar Baz")
+        self.assertEqual(memory.title, "New title")
+        self.assertEqual(memory.text, "New text")
 
     def test_redirects_not_logged_in_to_login(self):
         c = Client()
         path = reverse("places_remember:create_memory")
         expected_redirect = reverse("account_login") + "?next=" + path
         self.assertRedirects(c.get(path), expected_redirect)
+        self.assertRedirects(c.post(path), expected_redirect)
 
 
 class UpdateMemoryViewTests(TestCase):
@@ -47,18 +94,106 @@ class UpdateMemoryViewTests(TestCase):
             memory=self.memory
         )
 
-    def test_available_for_logged_in(self):
+    def test_good_case(self):
         c = Client()
         c.login(username="test", password="test")
+
         path = reverse("places_remember:update_memory", kwargs={"pk": self.memory.pk})
-        response = c.get(path)
-        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(c.get(path).status_code, 200)
+
+        response = c.post(path, data={
+            "latitude": 50,
+            "longitude": 70,
+            "zoom": 3,
+            "place_id": 345,
+            "place_name": "Foobar Baz",
+            "title": "New title",
+            "text": "New text"
+        })
+        expected_redirect = reverse("places_remember:index")
+        self.assertRedirects(response, expected_redirect)
+        self.memory = models.Memory.objects.get(pk=self.memory.pk)
+        self.assertEqual(self.memory.place.latitude, 50)
+        self.assertEqual(self.memory.place.longitude, 70)
+        self.assertEqual(self.memory.place.zoom, 3)
+        self.assertEqual(self.memory.place.place_id, 345)
+        self.assertEqual(self.memory.place.place_name, "Foobar Baz")
+        self.assertEqual(self.memory.title, "New title")
+        self.assertEqual(self.memory.text, "New text")
 
     def test_redirects_not_logged_in_to_login(self):
         c = Client()
-        path = reverse("places_remember:update_memory", kwargs={"pk": 1})
+        path = reverse("places_remember:update_memory", kwargs={"pk": self.memory.pk})
         expected_redirect = reverse("account_login") + "?next=" + path
         self.assertRedirects(c.get(path), expected_redirect)
+
+    def test_user_cant_access_other_users_memories(self):
+        c = Client()
+        c.login(username="another", password="test")
+        path = reverse("places_remember:update_memory", kwargs={"pk": self.memory.pk})
+        expected_redirect = reverse("account_login") + "?next=" + path
+        self.assertRedirects(c.get(path), expected_redirect)
+        self.assertRedirects(c.post(path), expected_redirect)
+        self.assertRedirects(c.delete(path), expected_redirect)
+
+
+class DeleteMemoryViewTests(TestCase):
+    def setUp(self) -> None:
+        User = get_user_model()
+        self.user = User.objects.create_user("test", "test@gmail.com", "test")
+        self.another_user = User.objects.create_user("another", "another@example.com", "text")
+        self.memory = models.Memory.objects.create(
+            user=self.user,
+            title="Test memory",
+            text="Test, test, test.",
+        )
+        self.place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=self.memory
+        )
+
+    def test_good_case(self):
+        memory = models.Memory.objects.create(
+            user=self.user,
+            title="Test memory",
+            text="Test, test, test.",
+        )
+        place = models.Place.objects.create(
+            latitude=56.83800773134774, longitude=60.60362527445821,
+            zoom=16,
+            place_id=None, place_name="",
+            memory=memory
+        )
+
+        c = Client()
+        c.login(username="test", password="test")
+
+        path = reverse("places_remember:delete_memory", kwargs={"pk": memory.pk})
+
+        self.assertEqual(c.get(path).status_code, 200)
+
+        expected_redirect = reverse("places_remember:index")
+        self.assertRedirects(c.post(path), expected_redirect)
+        self.assertFalse(models.Memory.objects.filter(pk=memory.pk).exists())
+        self.assertFalse(models.Place.objects.filter(pk=place.pk).exists())
+
+    def test_redirects_not_logged_in_to_login(self):
+        c = Client()
+        path = reverse("places_remember:delete_memory", kwargs={"pk": self.memory.pk})
+        expected_redirect = reverse("account_login") + "?next=" + path
+        self.assertRedirects(c.get(path), expected_redirect)
+
+    def test_user_cant_access_other_users_memories(self):
+        c = Client()
+        c.login(username="another", password="test")
+        path = reverse("places_remember:delete_memory", kwargs={"pk": self.memory.pk})
+        expected_redirect = reverse("account_login") + "?next=" + path
+        self.assertRedirects(c.get(path), expected_redirect)
+        self.assertRedirects(c.post(path), expected_redirect)
+        self.assertRedirects(c.delete(path), expected_redirect)
 
 
 class LoginTests(TestCase):

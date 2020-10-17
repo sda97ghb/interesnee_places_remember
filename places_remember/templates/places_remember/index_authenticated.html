@@ -47,7 +47,7 @@
                 </p>
                 <div>
                     <a href="{% url 'places_remember:update_memory' pk=memory.pk %}">Edit</a>
-                    <a href="#">Delete</a>
+                    <a href="{% url 'places_remember:delete_memory' pk=memory.pk %}">Delete</a>
                 </div>
             </div>
         </li>

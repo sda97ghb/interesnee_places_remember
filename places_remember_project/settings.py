@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import warnings
 
 from django.urls import reverse_lazy
+
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,16 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "rfia*oxalattw-b64#qmp!e-=if!nxk81l+5#7a!02&bpi9%*q"
-if not DEBUG:
-    warnings.warn("Replace SECRET_KEY in production and remove this line")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -95,11 +96,15 @@ SITE_ID = 1
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
+    # }
+    "default": dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
+for _, db in DATABASES.items():
+    if db["ENGINE"] == "django.db.backends.sqlite3":
+        del db["OPTIONS"]['sslmode']
 
 
 # Password validation
@@ -156,8 +161,6 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-if not DEBUG:
-    warnings.warn("Replace APP[\"secret\"] for all providers in production and remove this line")
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
         'METHOD': 'oauth2',
@@ -181,7 +184,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'VERSION': 'v7.0',
         'APP': {
             'client_id': "1145119862569107",
-            'secret': "c1a4c93e5d14d39308ca5c0021f9a653",
+            'secret': os.getenv("FACEBOOK_SECRET"),
             'key': ''
         }
     }
@@ -195,6 +198,4 @@ LOGIN_REDIRECT_URL = reverse_lazy("places_remember:index")
 # Static maps https://yandex.ru/dev/maps/staticapi/doc/1.x/dg/concepts/input_params.html/
 
 YANDEX_MAPS_API_VERSION = "2.1"
-YANDEX_MAPS_API_KEY = "9b2154e4-aa93-4eaf-879a-0a3fc3e752b7"
-if not DEBUG:
-    warnings.warn("Replace YANDEX_MAPS_API_KEY in production and remove this line")
+YANDEX_MAPS_API_KEY = os.getenv("YANDEX_MAPS_API_KEY")

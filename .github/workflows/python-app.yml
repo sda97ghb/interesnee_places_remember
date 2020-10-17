@@ -31,11 +31,6 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-#    - name: Test with manage.py test
-#      run: |
-#        python manage.py test places_remember
-    - name: mkdir ./coverage
-      run: mkdir ./coverage
     - name: Coverage
       run: coverage run --omit=*/venv/*,*/migrations/*,manage.py manage.py test
       env:
@@ -43,18 +38,7 @@ jobs:
         FACEBOOK_SECRET: 01234567890123456789012345678901
         YANDEX_MAPS_API_KEY: 12312312-1234-1234-1234-012345678912
         DATABASE_URL: sqlite:///db.sqlite3
-    - name: Coverage report
-      run: coverage report > ./coverage/lcov.info
     - name: Coveralls
       run: coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-#    - name: Coveralls
-#      uses: coverallsapp/github-action@master
-#      with:
-#        github-token: ${{ secrets.GITHUB_TOKEN }}
-#      env:
-#        SECRET_KEY: 01234567890123456789012345678901234567890123456789
-#        FACEBOOK_SECRET: 01234567890123456789012345678901
-#        YANDEX_MAPS_API_KEY: 12312312-1234-1234-1234-012345678912
-#        DATABASE_URL: sqlite:///db.sqlite3

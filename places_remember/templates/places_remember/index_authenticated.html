@@ -1,5 +1,6 @@
 {% extends 'places_remember/base.html' %}
 {% load static %}
+{% load i18n %}
 {% load socialaccount %}
 
 {% block head_extra %}
@@ -12,7 +13,7 @@
         <div class="col-auto mx-auto">
             {% get_social_accounts user as accounts %}
             <img class="profile-picture rounded-circle border" src="{{ accounts.facebook.0.get_avatar_url }}"
-                 alt="User's photo"/>
+                 alt="{% translate "User's photo" %}"/>
         </div>
     </div>
     <div class="row mt-2">
@@ -24,7 +25,9 @@
 <div class="container mt-3 mb-4">
     <div class="row">
         <div class="col-auto mx-auto">
-            <a class="btn btn-primary" role="button" href="{% url 'places_remember:create_memory' %}">Add memory</a>
+            <a class="btn btn-primary" role="button" href="{% url 'places_remember:create_memory' %}">
+                {% translate 'Add memory' %}
+            </a>
         </div>
     </div>
 </div>
@@ -39,15 +42,14 @@
                     {{ memory.title }}
                 </h4>
                 <p class="text-black-50 mb-2">
-                    {{ memory.place.name|default:"Unknown place" }}
-                    at {{ memory.place.latitude }}, {{ memory.place.longitude }}
+                    {{ memory.place }}
                 </p>
                 <p class="mb-2 text-break">
                     {{ memory.text|truncatechars:200 }}
                 </p>
                 <div>
-                    <a href="{% url 'places_remember:update_memory' pk=memory.pk %}">Edit</a>
-                    <a href="{% url 'places_remember:delete_memory' pk=memory.pk %}">Delete</a>
+                    <a href="{% url 'places_remember:update_memory' pk=memory.pk %}">{% translate 'Edit' %}</a>
+                    <a href="{% url 'places_remember:delete_memory' pk=memory.pk %}">{% translate 'Delete' %}</a>
                 </div>
             </div>
         </li>
@@ -56,8 +58,9 @@
     {% else %}
     <div class="row align-items-center justify-content-center empty-state">
         <div class="col-auto text-center">
-            There are no memories yet.<br/>
-            Let's <a href="{% url 'places_remember:create_memory' %}">add one</a>!
+            {% translate 'There are no memories yet.' %}<br/>
+            {% url 'places_remember:create_memory' as create_memory_url %}
+            {% blocktranslate %}Let's <a href="{{ create_memory_url }}">add one</a>!{% endblocktranslate %}
         </div>
     </div>
     {% endif %}

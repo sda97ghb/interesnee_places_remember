@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class MemoryForm(forms.Form):
@@ -8,8 +9,8 @@ class MemoryForm(forms.Form):
     zoom = forms.FloatField(widget=forms.HiddenInput())
     place_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     place_name = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput())
-    title = forms.CharField(max_length=100)
-    text = forms.CharField(widget=forms.Textarea, max_length=1000)
+    title = forms.CharField(label=_("Title"), max_length=100)
+    text = forms.CharField(label=_("Text"), widget=forms.Textarea, max_length=1000)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,14 +24,14 @@ class MemoryForm(forms.Form):
         if -90 <= latitude <= 90:
             return latitude
         else:
-            raise ValidationError("Latitude must be in a range from -90 to 90", code="invalid")
+            raise ValidationError(_("Latitude must be in a range from -90 to 90"), code="invalid")
 
     def clean_longitude(self):
         longitude = self.cleaned_data["longitude"]
         if -180 <= longitude <= 180:
             return longitude
         else:
-            raise ValidationError("Longitude must be in a range from -180 to 180", code="invalid")
+            raise ValidationError(_("Longitude must be in a range from -180 to 180"), code="invalid")
 
     def clean_zoom(self):
         zoom = self.cleaned_data["zoom"]
@@ -39,4 +40,4 @@ class MemoryForm(forms.Form):
             # Though api documentation defines it as integer and static maps does not support float zoom.
             return int(zoom)
         else:
-            raise ValidationError("Zoom must be in a range from 0 (entire world) to 21")
+            raise ValidationError(_("Zoom must be in a range from 0 (entire world) to 21"))

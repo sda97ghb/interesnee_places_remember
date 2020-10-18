@@ -1,5 +1,6 @@
 {% extends 'places_remember/base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block head_extra %}
 <link rel="stylesheet" href="{% static 'places_remember/css/memory_form.css' %}">
@@ -7,7 +8,13 @@
 
 {% block content %}
 <div class="container px-0">
-    <h2 class="my-3">{{ title|default:"Memory" }}</h2>
+    <h2 class="my-3">
+        {% if title %}
+        {{ title }}
+        {% else %}
+        {% translate 'Memory' %}
+        {% endif %}
+    </h2>
 
     <div id="map" class="bg-light w-100 map">
         <div class="map-marker-wrapper">
@@ -30,7 +37,7 @@
             {{ field.as_widget }}
         </div>
         {% endfor %}
-        <input type="submit" class="btn btn-primary" value="Save">
+        <input type="submit" class="btn btn-primary" value="{% translate 'Save' %}">
     </form>
 </div>
 {% endblock content%}

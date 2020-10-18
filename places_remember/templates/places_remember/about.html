@@ -1,11 +1,13 @@
 {% extends 'places_remember/base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container">
     <address class="mt-3">
         <p>
-            Developed by Dmitry Smirnov<br/>
-            <a class="" href="mailto:sda97g@gmail.com">sda97g@gmail.com</a>
+            {% translate 'Developed by' %} Dmitry Smirnov<br/>
+            <a class="" href="mailto:sda97g@gmail.com">sda97g@gmail.com</a><br/>
+            <a href="https://github.com/sda97ghb/interesnee_places_remember">GitHub</a>
         </p>
     </address>
 </div>

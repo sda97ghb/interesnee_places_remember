@@ -391,12 +391,14 @@ class YandexMapsContextProcessorTests(TestCase):
 
 class PlaceModelTests(TestCase):
     def test_string_representation(self):
+        latitude = 56.83800773134774
+        longitude = 60.60362527445821
         place = models.Place(
-            latitude=56.83800773134774, longitude=60.60362527445821,
+            latitude=latitude, longitude=longitude,
             zoom=16,
             place_id=None, place_name=""
         )
-        self.assertEqual(str(place), "Unknown place at 56.83800773134774,60.60362527445821")
+        self.assertEqual(str(place), "Unknown place at %(lat)f,%(lon)f" % {"lat": latitude, "lon": longitude})
 
     def test_verbose_name_plural(self):
         self.assertEqual(str(models.Place._meta.verbose_name_plural), "places")
@@ -425,14 +427,19 @@ class MemoryModelTests(TestCase):
             title="Test memory",
             text="Test, test, test.",
         )
+        latitude = 56.83800773134774
+        longitude = 60.60362527445821
         place = models.Place.objects.create(
-            latitude=56.83800773134774, longitude=60.60362527445821,
+            latitude=latitude, longitude=longitude,
             zoom=16,
             place_id=None, place_name="",
             memory=memory
         )
-        self.assertEqual(str(memory),
-                         "John Doe's memory about Unknown place at 56.83800773134774,60.60362527445821: Test memory")
+        expected = "John Doe's memory about Unknown place at %(lat)f,%(lon)f: Test memory" % {
+            "lat": latitude,
+            "lon": longitude
+        }
+        self.assertEqual(str(memory), expected)
 
     def test_string_representation_no_first_and_last_names(self):
         user = self.User.objects.create_user(
@@ -443,14 +450,19 @@ class MemoryModelTests(TestCase):
             title="Test memory",
             text="Test, test, test.",
         )
+        latitude = 56.83800773134774
+        longitude = 60.60362527445821
         place = models.Place.objects.create(
-            latitude=56.83800773134774, longitude=60.60362527445821,
+            latitude=latitude, longitude=longitude,
             zoom=16,
             place_id=None, place_name="",
             memory=memory
         )
-        self.assertEqual(str(memory),
-                         "jane's memory about Unknown place at 56.83800773134774,60.60362527445821: Test memory")
+        expected = "jane's memory about Unknown place at %(lat)f,%(lon)f: Test memory" % {
+            "lat": latitude,
+            "lon": longitude
+        }
+        self.assertEqual(str(memory), expected)
 
     def test_verbose_name_plural(self):
         self.assertEqual(str(models.Memory._meta.verbose_name_plural), "memories")

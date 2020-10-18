@@ -9,7 +9,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import FormView, DeleteView
-
+from django.utils.translation import gettext_lazy as _
 from places_remember import forms, models
 
 
@@ -41,7 +41,7 @@ class CreateMemoryView(FormView):
         "zoom": 16,
     }
     extra_context = {
-        "title": "Add memory"
+        "title": _("Add memory")
     }
 
     def form_valid(self, form):
@@ -77,7 +77,7 @@ class UpdateMemoryView(UserPassesTestMixin, FormView):
     form_class = forms.MemoryForm
     success_url = reverse_lazy("places_remember:index")
     extra_context = {
-        "title": "Edit memory"
+        "title": _("Edit memory")
     }
 
     def test_func(self):

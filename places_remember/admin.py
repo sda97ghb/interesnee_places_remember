@@ -1,5 +1,6 @@
 from django.contrib import admin
 from places_remember import models
+from django.utils.translation import gettext_lazy as _
 
 
 class PlaceInline(admin.StackedInline):
@@ -10,7 +11,7 @@ class PlaceInline(admin.StackedInline):
 class MemoryAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {"fields": ["title", "text"]}),
-        ("User", {"fields": ["user"]})
+        (_("User"), {"fields": ["user"]})
     ]
     inlines = [PlaceInline]
 

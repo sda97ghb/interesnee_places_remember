@@ -7,4 +7,3 @@ db.sqlite3
 /mediafiles/
 .env
 .coverage
-*.mo
